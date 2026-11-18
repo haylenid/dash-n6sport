@@ -1,6 +1,6 @@
 /* js/pages/anggota.js — diekstrak otomatis dari index.html (fase 4 refactor) */
 import { logAct, meId } from '../core/access.js';
-import { apiAddMember, apiDel, isApiMode } from '../core/api.js';
+import { apiAddMember, apiDel, apiPatch, isApiMode } from '../core/api.js';
 import { COACHES, ROLE } from '../core/constants.js';
 import { esc, first } from '../core/helpers.js';
 import { icon } from '../core/icons.js';
@@ -27,12 +27,16 @@ MODALS.memedit=m=>{
  <label class="field"><span>WhatsApp</span><input id="f-ew" name="wa" inputmode="tel" value="${esc(x.wa||'')}"></label>
  ${isC?`<label class="field full"><span>Lokasi coach melatih</span><input id="f-eloc" name="loc" placeholder="Contoh: GBK Senayan, Jakarta" value="${esc(x.loc||'')}"></label>`:''}
  <div class="row full"><button class="btn primary" type="submit">Simpan perubahan</button><button class="btn" type="button" data-act="close">Batal</button></div></form>`)};
-FORMS.memedit=f=>{
+FORMS.memedit=async f=>{
  const x=store.members.find(v=>v.id===f.get('id'));if(!x)return;
  const lg=f.get('login').trim();
  if(store.members.some(v=>v.id!==x.id&&v.login===lg)){toast('ID login sudah dipakai');return}
- x.name=f.get('name').trim();x.login=lg;x.email=f.get('email').trim();x.wa=(f.get('wa')||'').trim();
- if(x.role==='coach'||x.role==='head'){x.role=f.get('role')||x.role;x.loc=(f.get('loc')||'').trim()}
+ const d={name:f.get('name').trim(),login:lg,email:f.get('email').trim(),wa:(f.get('wa')||'').trim()};
+ if(x.role==='coach'||x.role==='head'){d.role=f.get('role')||x.role;d.loc=(f.get('loc')||'').trim()}
+ /* Edit anggota sebelumnya hanya tersimpan lokal (tidak pernah ke server,
+    seperti bug form profil 2026-11-06) — kini disimpan lewat API. */
+ if(isApiMode()){try{const u=await apiPatch('/members/'+x.id,d);Object.assign(x,u)}catch(e){toast('Gagal simpan: '+e.message);return}}
+ else Object.assign(x,d);
  logAct('mengedit anggota '+x.name);appState.modal=null;toast('Data '+first(x.name)+' diperbarui');render()};
 FORMS.member=async f=>{const role=f.get('role'),d={name:f.get('name').trim(),role,login:f.get('login').trim(),email:f.get('email').trim(),wa:'',loc:(f.get('loc')||'').trim(),password:f.get('password')};
  const m=isApiMode()?await apiAddMember(d):null;

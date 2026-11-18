@@ -24,7 +24,7 @@ PAGES.setting=()=>{
  if(t===5){
   body=`${banner('Pemilik menentukan apa yang boleh dilihat tiap peran. Disensor berarti halaman tetap terbuka tetapi nominal keuangan dan komisi disembunyikan. Tersembunyi berarti modul hilang dari menu. Untuk Coach, Penuh berarti hanya data klien dan jadwal miliknya.')}
   <div class="tw"><table class="acl"><thead><tr><th>Modul</th><th>Admin</th><th>Head Coach</th><th>Coach</th></tr></thead><tbody>${MODS.filter(m=>m[0]!=='setting').map(([k,l])=>`<tr><td><b>${l}</b></td>${['admin','head','coach'].map(r=>`<td><select id="f-acl-${r}-${k}" data-set="store.acl.${r}.${k}" aria-label="${l} untuk ${ROLE[r]}">${ACL_OPTIONS.map(([v,n])=>`<option value="${v}" ${store.acl[r][k]===v?'selected':''}>${n}</option>`).join('')}</select></td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="row"><button class="btn primary" data-act="aclsave">Simpan hak akses</button></div>`}
- return `<div class="stackv">${tabsBar(tabs)}${body}</div>`};
+ return `<div class="stackv setting">${tabsBar(tabs)}${body}</div>`};
 ACT.syncreset=()=>syncReset();
 ACT.aclsave=async()=>{
   if(!isApiMode()){toast('Tersimpan lokal');return}
